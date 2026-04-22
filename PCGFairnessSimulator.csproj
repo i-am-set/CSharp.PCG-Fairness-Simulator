@@ -11,6 +11,23 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Core\Randomness\**" />
+    <Compile Remove="Infrastructure\Logging\**" />
+    <Compile Remove="Infrastructure\Serialization\**" />
+    <Compile Remove="Visualization\Charts\**" />
+    <Compile Remove="Visualization\Overlays\**" />
+    <EmbeddedResource Remove="Core\Randomness\**" />
+    <EmbeddedResource Remove="Infrastructure\Logging\**" />
+    <EmbeddedResource Remove="Infrastructure\Serialization\**" />
+    <EmbeddedResource Remove="Visualization\Charts\**" />
+    <EmbeddedResource Remove="Visualization\Overlays\**" />
+    <None Remove="Core\Randomness\**" />
+    <None Remove="Infrastructure\Logging\**" />
+    <None Remove="Infrastructure\Serialization\**" />
+    <None Remove="Visualization\Charts\**" />
+    <None Remove="Visualization\Overlays\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
   </ItemGroup>
@@ -25,17 +42,6 @@
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\Randomness\" />
-    <Folder Include="Data\Schemas\" />
-    <Folder Include="Data\Output\" />
-    <Folder Include="Infrastructure\Logging\" />
-    <Folder Include="Infrastructure\Serialization\" />
-    <Folder Include="UI\Controls\" />
-    <Folder Include="UI\Screens\" />
-    <Folder Include="Visualization\Charts\" />
-    <Folder Include="Visualization\Overlays\" />
   </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="CollectPackageReferences">
     <Message Text="Restoring dotnet tools (this might take a while depending on your internet speed and should only happen upon building your project for the first time, or after upgrading MonoGame, or clearing your nuget cache)" Importance="High" />
