@@ -18,6 +18,7 @@ namespace Visualization
 
         private List<Point> _chunkOrder;
         private int _lastRunCount = -1;
+        private int _lastMasterSeed = -1;
 
         public bool IsSeedMenuOpen { get; private set; } = false;
         private string _seedInputText = "";
@@ -159,10 +160,13 @@ namespace Visualization
         private void DrawChunkLoader(SpriteBatch spriteBatch, Rectangle screenBounds)
         {
             int totalRuns = _controller.Config.RunCount;
+            int currentSeed = _controller.Config.MasterSeed;
 
-            if (_chunkOrder == null || _lastRunCount != totalRuns)
+            if (_chunkOrder == null || _lastRunCount != totalRuns || _lastMasterSeed != currentSeed)
             {
                 _lastRunCount = totalRuns;
+                _lastMasterSeed = currentSeed;
+
                 int side = (int)Math.Ceiling(Math.Sqrt(totalRuns));
                 float center = (side - 1) / 2f;
 
@@ -175,10 +179,36 @@ namespace Visualization
                     }
                 }
 
+                Random rng = new Random(currentSeed);
+
+                float phase1 = (float)(rng.NextDouble() * Math.PI * 2);
+                float phase2 = (float)(rng.NextDouble() * Math.PI * 2);
+                float phase3 = (float)(rng.NextDouble() * Math.PI * 2);
+
+                float freq1 = 3f + (float)rng.NextDouble() * 2f;
+                float freq2 = 7f + (float)rng.NextDouble() * 4f;
+                float freq3 = 13f + (float)rng.NextDouble() * 6f;
+
                 tempOrder = tempOrder.OrderBy(p => {
                     float dx = p.X - center;
                     float dy = p.Y - center;
-                    return dx * dx + dy * dy;
+                    float dist = (float)Math.Sqrt(dx * dx + dy * dy);
+
+                    if (dist < 1.0f) return 0f;
+
+                    float angle = (float)Math.Atan2(dy, dx);
+
+                    float tendril = (float)(
+                        Math.Sin(angle * freq1 + phase1) * 0.15 +
+                        Math.Sin(angle * freq2 + phase2) * 0.08 +
+                        Math.Sin(angle * freq3 + phase3) * 0.04
+                    );
+
+                    float distMod = dist * (1.0f - tendril);
+
+                    float noise = (float)rng.NextDouble() * 3.0f;
+
+                    return distMod + noise;
                 }).ToList();
 
                 _chunkOrder = tempOrder.Take(totalRuns).ToList();
