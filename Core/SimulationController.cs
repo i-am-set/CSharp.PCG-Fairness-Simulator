@@ -130,19 +130,6 @@ namespace Core
             StatusMessage = "Ready";
         }
 
-        public void SaveConfig(string name)
-        {
-            ConfigManager.SavePreset(Config, name);
-            StatusMessage = $"Saved Config: {name}";
-        }
-
-        public void LoadConfig(string name)
-        {
-            if (IsRunning) return;
-            Config = ConfigManager.LoadPreset(name);
-            StatusMessage = $"Loaded Config: {name}";
-        }
-
         public void OpenOutputFolder()
         {
             if (Directory.Exists(OutputDirectory))

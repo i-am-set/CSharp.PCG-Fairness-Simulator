@@ -42,7 +42,6 @@ namespace Core.Simulation
 
                 projectedSequence.Add(current);
 
-                // Update hypothetical state
                 simState = simState.ApplyDamage(current.Difficulty, _config.DamageMultiplier);
                 if (simState.IsAlive)
                 {

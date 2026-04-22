@@ -47,7 +47,6 @@ namespace Core.Metrics
             MeanEntropy = runs.Average(r => r.EntropyScore);
             MeanDeltaVariance = runs.Average(r => r.DeltaVariance);
 
-            // Corrections
             AverageCorrectionsPerRun = runs.Average(r => r.CorrectionCount);
             MeanCorrectionsPerEncounter = runs.Average(r => r.CorrectionsPerEncounter);
             MeanMaxCorrectionStreak = runs.Average(r => r.MaxCorrectionStreak);

@@ -13,10 +13,8 @@ namespace Core.Infrastructure
         {
             var sb = new StringBuilder();
 
-            // Header
             sb.AppendLine("RunID,Seed,ConstraintMode,Survived,SurvivalLength,DeathCause,FinalHP,FinalResources,EntropyScore,DeltaVariance,AvgDifficulty,TotalCorrections,CorrectionsPerEncounter,MaxCorrectionStreak,NearDeath_EncounterCount,NearDeath_TotalEncounters,NearDeath_Entered,HealthDelta_Mean,HealthDelta_StdDev,AvgResourceConsumedPct,MinResourceRemaining,FPI_Avg,FPI_Max,RecoveryLag_Avg,RecoveryLag_FailedCount");
 
-            // Rows
             foreach (var run in runs)
             {
                 sb.Append(run.RunID).Append(",");
@@ -30,13 +28,9 @@ namespace Core.Infrastructure
                 sb.Append(run.EntropyScore.ToString("F4")).Append(",");
                 sb.Append(run.DeltaVariance.ToString("F4")).Append(",");
                 sb.Append(run.AverageDifficulty.ToString("F4")).Append(",");
-
-                // Corrections
                 sb.Append(run.CorrectionCount).Append(",");
                 sb.Append(run.CorrectionsPerEncounter.ToString("F4")).Append(",");
                 sb.Append(run.MaxCorrectionStreak).Append(",");
-
-                // Near Death & Volatility
                 sb.Append(run.NearDeath_EncounterCount).Append(",");
                 sb.Append(run.NearDeath_TotalEncounters).Append(",");
                 sb.Append(run.NearDeath_Entered).Append(",");
@@ -44,13 +38,10 @@ namespace Core.Infrastructure
                 sb.Append(run.HealthDelta_StdDev.ToString("F2")).Append(",");
                 sb.Append(run.AvgResourceConsumedPct.ToString("F4")).Append(",");
                 sb.Append(run.MinResourceRemaining).Append(",");
-
-                // FPI & Recovery
                 sb.Append(run.FPI_Avg.ToString("F4")).Append(",");
                 sb.Append(run.FPI_Max.ToString("F4")).Append(",");
                 sb.Append(run.RecoveryLag_Avg.ToString("F2")).Append(",");
                 sb.Append(run.RecoveryLag_FailedCount);
-
                 sb.AppendLine();
             }
 
@@ -64,7 +55,6 @@ namespace Core.Infrastructure
         {
             var sb = new StringBuilder();
 
-            // Header
             sb.AppendLine("GroupName,TotalRuns,SurvivalRate,MeanSurvivalLength,MeanEntropy,MeanDeltaVariance,SpikeDeathRate,AttritionDeathRate,StarvationDeathRate,AvgCorrections,MeanCorrectionsPerEncounter,MeanMaxCorrectionStreak,MeanNearDeathCount,MeanNearDeathDuration,NearDeathRate,MeanHealthVolatility,MeanResourceConsumption,MeanMinResources,MeanFPI_Avg,MeanFPI_Max,MeanRecoveryLag,MeanRecoveryFailures");
 
             foreach (var batch in batches)
@@ -83,26 +73,19 @@ namespace Core.Infrastructure
                 sb.Append(spike.ToString("F4")).Append(",");
                 sb.Append(attrition.ToString("F4")).Append(",");
                 sb.Append(starvation.ToString("F4")).Append(",");
-
-                // Corrections
                 sb.Append(batch.AverageCorrectionsPerRun.ToString("F2")).Append(",");
                 sb.Append(batch.MeanCorrectionsPerEncounter.ToString("F4")).Append(",");
                 sb.Append(batch.MeanMaxCorrectionStreak.ToString("F2")).Append(",");
-
-                // Advanced Metrics
                 sb.Append(batch.MeanNearDeathCount.ToString("F2")).Append(",");
                 sb.Append(batch.MeanNearDeathDuration.ToString("F2")).Append(",");
                 sb.Append(batch.NearDeathRate.ToString("F4")).Append(",");
                 sb.Append(batch.MeanHealthVolatility.ToString("F2")).Append(",");
                 sb.Append(batch.MeanResourceConsumption.ToString("F4")).Append(",");
                 sb.Append(batch.MeanMinResources.ToString("F2")).Append(",");
-
-                // FPI & Recovery
                 sb.Append(batch.MeanFPI_Avg.ToString("F4")).Append(",");
                 sb.Append(batch.MeanFPI_Max.ToString("F4")).Append(",");
                 sb.Append(batch.MeanRecoveryLag.ToString("F2")).Append(",");
                 sb.Append(batch.MeanRecoveryFailures.ToString("F2"));
-
                 sb.AppendLine();
             }
 

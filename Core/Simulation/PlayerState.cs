@@ -39,7 +39,6 @@ namespace Core.Simulation
 
             if (cost <= 0) return this;
 
-            // Greedy Rule: Buy as long as we can afford it and need it
             while (res >= cost && hp < MaxHP)
             {
                 hp = Math.Min(hp + healAmount, MaxHP);

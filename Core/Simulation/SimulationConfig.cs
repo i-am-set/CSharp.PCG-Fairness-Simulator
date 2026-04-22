@@ -5,7 +5,6 @@ namespace Core.Simulation
 {
     public class SimulationConfig
     {
-        // Config
         public int RunCount { get; set; } = 10000;
         public int MasterSeed { get; set; } = 12345;
 
@@ -26,7 +25,6 @@ namespace Core.Simulation
         public int MinReward { get; set; } = 5;
         public int MaxReward { get; set; } = 15;
 
-        // constraint toggles
         public bool EnableConstraints { get; set; } = false;
         public bool UseDifficultySpikeLimiter { get; set; } = false;
         public bool UseRollingDifficultyTarget { get; set; } = false;
