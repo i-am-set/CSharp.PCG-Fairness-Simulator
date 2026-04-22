@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Infrastructure;
@@ -20,6 +22,9 @@ namespace Core
         public bool IsRunning { get; private set; }
         public double Progress { get; private set; }
         public string StatusMessage { get; private set; } = "Ready";
+        public string OutputDirectory { get; private set; }
+
+        public bool UseRandomMasterSeed { get; set; } = true;
 
         public SimulationController()
         {
@@ -28,11 +33,22 @@ namespace Core
             _runner.OnStatusChanged += s => StatusMessage = s;
 
             Config = new SimulationConfig();
+
+            OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SimulationResults");
+            if (!Directory.Exists(OutputDirectory))
+            {
+                Directory.CreateDirectory(OutputDirectory);
+            }
         }
 
         public async void StartSimulation()
         {
             if (IsRunning) return;
+
+            if (UseRandomMasterSeed)
+            {
+                Config.MasterSeed = new Random().Next();
+            }
 
             try
             {
@@ -47,8 +63,6 @@ namespace Core
 
             IsRunning = true;
             Progress = 0;
-            RawResults = null;
-            BatchSummaries = null;
             _cts = new CancellationTokenSource();
 
             Logger.Log($"Starting Simulation. Runs: {Config.RunCount}, Seed: {Config.MasterSeed}");
@@ -56,26 +70,29 @@ namespace Core
 
             try
             {
-                RawResults = await _runner.RunSimulationAsync(Config, _cts.Token);
+                var newRawResults = await _runner.RunSimulationAsync(Config, _cts.Token);
 
-                BatchSummaries = new List<BatchMetrics>();
+                var newBatchSummaries = new List<BatchMetrics>();
                 var allRuns = new List<RunMetric>();
 
-                foreach (var kvp in RawResults)
+                foreach (var kvp in newRawResults)
                 {
-                    BatchSummaries.Add(new BatchMetrics(kvp.Key, kvp.Value));
+                    newBatchSummaries.Add(new BatchMetrics(kvp.Key, kvp.Value));
                     allRuns.AddRange(kvp.Value);
                 }
 
                 string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
-                string summaryCsv = CsvExporter.ExportBatchSummaryToCsv(BatchSummaries);
-                string summaryFilename = $"Results_Summary_{timestamp}.csv";
-                System.IO.File.WriteAllText(summaryFilename, summaryCsv);
+                string summaryCsv = CsvExporter.ExportBatchSummaryToCsv(newBatchSummaries);
+                string summaryFilename = Path.Combine(OutputDirectory, $"Results_Summary_{timestamp}.csv");
+                File.WriteAllText(summaryFilename, summaryCsv);
 
                 string rawCsv = CsvExporter.ExportRunsToCsv(allRuns);
-                string rawFilename = $"Results_RawData_{timestamp}.csv";
-                System.IO.File.WriteAllText(rawFilename, rawCsv);
+                string rawFilename = Path.Combine(OutputDirectory, $"Results_RawData_{timestamp}.csv");
+                File.WriteAllText(rawFilename, rawCsv);
+
+                RawResults = newRawResults;
+                BatchSummaries = newBatchSummaries;
 
                 Logger.Log($"Simulation Complete. Saved {summaryFilename} and {rawFilename}");
             }
@@ -105,6 +122,14 @@ namespace Core
             }
         }
 
+        public void ClearResults()
+        {
+            RawResults = null;
+            BatchSummaries = null;
+            Progress = 0;
+            StatusMessage = "Ready";
+        }
+
         public void SaveConfig(string name)
         {
             ConfigManager.SavePreset(Config, name);
@@ -116,6 +141,19 @@ namespace Core
             if (IsRunning) return;
             Config = ConfigManager.LoadPreset(name);
             StatusMessage = $"Loaded Config: {name}";
+        }
+
+        public void OpenOutputFolder()
+        {
+            if (Directory.Exists(OutputDirectory))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = OutputDirectory,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
         }
     }
 }

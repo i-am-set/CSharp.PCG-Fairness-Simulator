@@ -31,16 +31,21 @@ namespace Visualization
             string[] labels,
             float[] values,
             Color barColor,
-            float? fixedMax = null)
+            float? fixedMax = null,
+            float? fixedMin = null)
         {
-            DrawRect(spriteBatch, bounds, Color.Black * 0.5f);
+            DrawRect(spriteBatch, bounds, new Color(25, 25, 25, 128));
+            DrawRect(spriteBatch, new Rectangle(bounds.X, bounds.Y, bounds.Width, 1), new Color(50, 50, 50));
+            DrawRect(spriteBatch, new Rectangle(bounds.X, bounds.Bottom - 1, bounds.Width, 1), new Color(50, 50, 50));
+            DrawRect(spriteBatch, new Rectangle(bounds.X, bounds.Y, 1, bounds.Height), new Color(50, 50, 50));
+            DrawRect(spriteBatch, new Rectangle(bounds.Right - 1, bounds.Y, 1, bounds.Height), new Color(50, 50, 50));
 
             Vector2 titleSize = font.MeasureString(title);
-            spriteBatch.DrawString(font, title, new Vector2(bounds.X + (bounds.Width - titleSize.X) / 2, bounds.Y + 5), Color.White);
+            spriteBatch.DrawString(font, title, new Vector2(bounds.X + (bounds.Width - titleSize.X) / 2, bounds.Y + 10), Color.White);
 
-            int marginLeft = 50;
-            int marginBottom = 40;
-            int marginTop = 30;
+            int marginLeft = 80;
+            int marginBottom = 50;
+            int marginTop = 40;
             int marginRight = 20;
 
             int chartBottom = bounds.Bottom - marginBottom;
@@ -50,23 +55,25 @@ namespace Visualization
             int chartWidth = bounds.Width - marginLeft - marginRight;
 
             float maxVal = fixedMax ?? (values.Length > 0 ? values.Max() : 1f);
-            if (maxVal <= 0) maxVal = 1f;
+            float minVal = fixedMin ?? 0f;
+            if (maxVal <= minVal) maxVal = minVal + 1f;
+            float range = maxVal - minVal;
 
-            DrawRect(spriteBatch, new Rectangle(chartLeft, chartTop, 2, chartHeight), Color.Gray); // Y Axis
-            DrawRect(spriteBatch, new Rectangle(chartLeft, chartBottom, chartWidth, 2), Color.Gray); // X Axis
+            DrawRect(spriteBatch, new Rectangle(chartLeft, chartTop, 2, chartHeight), Color.Gray);
+            DrawRect(spriteBatch, new Rectangle(chartLeft, chartBottom, chartWidth, 2), Color.Gray);
 
-            DrawYAxisLabel(spriteBatch, font, "0", chartLeft, chartBottom, true);
-            DrawYAxisLabel(spriteBatch, font, (maxVal * 0.5f).ToString("0.##"), chartLeft, chartTop + chartHeight / 2, true);
+            DrawYAxisLabel(spriteBatch, font, minVal.ToString("0.##"), chartLeft, chartBottom, true);
+            DrawYAxisLabel(spriteBatch, font, (minVal + range * 0.5f).ToString("0.##"), chartLeft, chartTop + chartHeight / 2, true);
             DrawYAxisLabel(spriteBatch, font, maxVal.ToString("0.##"), chartLeft, chartTop, true);
 
             Vector2 xLabelSize = font.MeasureString(xAxisLabel);
             spriteBatch.DrawString(font, xAxisLabel,
-                new Vector2(chartLeft + (chartWidth - xLabelSize.X) / 2, bounds.Bottom - 20),
+                new Vector2(chartLeft + (chartWidth - xLabelSize.X) / 2, bounds.Bottom - 25),
                 Color.LightGray);
 
             Vector2 yLabelSize = font.MeasureString(yAxisLabel);
             spriteBatch.DrawString(font, yAxisLabel,
-                new Vector2(bounds.X + 5, chartTop + (chartHeight + yLabelSize.X) / 2),
+                new Vector2(bounds.X + 15, chartTop + (chartHeight + yLabelSize.X) / 2),
                 Color.LightGray,
                 -MathHelper.PiOver2,
                 Vector2.Zero,
@@ -76,17 +83,17 @@ namespace Visualization
 
             if (values.Length == 0) return;
 
-            int barWidth = (chartWidth / values.Length) - 5;
-            if (barWidth < 1) barWidth = 1;
+            int barWidth = (chartWidth / values.Length) - 10;
+            if (barWidth < 5) barWidth = 5;
 
             for (int i = 0; i < values.Length; i++)
             {
-                float val = Math.Min(values[i], maxVal);
-                float normalizedHeight = val / maxVal;
+                float val = MathHelper.Clamp(values[i], minVal, maxVal);
+                float normalizedHeight = (val - minVal) / range;
                 int barHeight = (int)(normalizedHeight * chartHeight);
 
                 Rectangle barRect = new Rectangle(
-                    chartLeft + (i * (barWidth + 5)) + 5,
+                    chartLeft + (i * (barWidth + 10)) + 10,
                     chartBottom - barHeight,
                     barWidth,
                     barHeight
@@ -94,20 +101,17 @@ namespace Visualization
 
                 DrawRect(spriteBatch, barRect, barColor);
 
-                string label = labels[i].Length > 4 ? labels[i].Substring(0, 4) : labels[i];
+                string label = labels[i].Length > 6 ? labels[i].Substring(0, 6) : labels[i];
                 Vector2 labelSize = font.MeasureString(label);
                 spriteBatch.DrawString(font, label,
                     new Vector2(barRect.Center.X - labelSize.X / 2, chartBottom + 5),
                     Color.White * 0.8f);
 
-                if (barHeight > 15)
-                {
-                    string valStr = values[i].ToString("0.##");
-                    Vector2 valSize = font.MeasureString(valStr);
-                    spriteBatch.DrawString(font, valStr,
-                        new Vector2(barRect.Center.X - valSize.X / 2, barRect.Y - 15),
-                        Color.Yellow * 0.9f);
-                }
+                string valStr = values[i].ToString("0.##");
+                Vector2 valSize = font.MeasureString(valStr);
+                spriteBatch.DrawString(font, valStr,
+                    new Vector2(barRect.Center.X - valSize.X / 2, barRect.Y - 20),
+                    Color.Yellow * 0.9f);
             }
         }
 
@@ -122,29 +126,34 @@ namespace Visualization
             List<Color> colors,
             List<string> seriesNames)
         {
-            DrawRect(spriteBatch, bounds, Color.Black * 0.5f);
+            DrawRect(spriteBatch, bounds, new Color(25, 25, 25, 128));
+            DrawRect(spriteBatch, new Rectangle(bounds.X, bounds.Y, bounds.Width, 1), new Color(50, 50, 50));
+            DrawRect(spriteBatch, new Rectangle(bounds.X, bounds.Bottom - 1, bounds.Width, 1), new Color(50, 50, 50));
+            DrawRect(spriteBatch, new Rectangle(bounds.X, bounds.Y, 1, bounds.Height), new Color(50, 50, 50));
+            DrawRect(spriteBatch, new Rectangle(bounds.Right - 1, bounds.Y, 1, bounds.Height), new Color(50, 50, 50));
 
-            spriteBatch.DrawString(font, title, new Vector2(bounds.X + 10, bounds.Y + 5), Color.White);
-
-            int legendX = bounds.Right - 120;
-            int legendY = bounds.Y + 30;
-            for (int i = 0; i < seriesNames.Count; i++)
-            {
-                Color c = colors[i % colors.Count];
-                DrawRect(spriteBatch, new Rectangle(legendX, legendY + (i * 15), 10, 10), c);
-                spriteBatch.DrawString(font, seriesNames[i], new Vector2(legendX + 15, legendY + (i * 15) - 2), Color.White * 0.7f);
-            }
-
-            int marginLeft = 50;
-            int marginBottom = 40;
-            int marginTop = 40;
-            int marginRight = 130;
+            int marginLeft = 100;
+            int marginBottom = 50;
+            int marginTop = 50;
+            int marginRight = 90;
 
             int chartBottom = bounds.Bottom - marginBottom;
             int chartTop = bounds.Y + marginTop;
             int chartHeight = chartBottom - chartTop;
             int chartLeft = bounds.X + marginLeft;
             int chartWidth = bounds.Width - marginLeft - marginRight;
+
+            Vector2 titleSize = font.MeasureString(title);
+            spriteBatch.DrawString(font, title, new Vector2(chartLeft + (chartWidth - titleSize.X) / 2, bounds.Y + 10), Color.White);
+
+            int legendX = chartLeft + chartWidth + 15;
+            int legendY = bounds.Y + 30;
+            for (int i = 0; i < seriesNames.Count; i++)
+            {
+                Color c = colors[i % colors.Count];
+                DrawRect(spriteBatch, new Rectangle(legendX, legendY + (i * 20), 12, 12), c);
+                spriteBatch.DrawString(font, seriesNames[i], new Vector2(legendX + 20, legendY + (i * 20) - 2), Color.White * 0.9f);
+            }
 
             DrawRect(spriteBatch, new Rectangle(chartLeft, chartTop, 2, chartHeight), Color.Gray);
             DrawRect(spriteBatch, new Rectangle(chartLeft, chartBottom, chartWidth, 2), Color.Gray);
@@ -154,19 +163,19 @@ namespace Visualization
             {
                 int yPos = chartBottom - (int)(p * chartHeight);
 
-                DrawRect(spriteBatch, new Rectangle(chartLeft, yPos, chartWidth, 1), Color.Gray * 0.3f);
+                DrawRect(spriteBatch, new Rectangle(chartLeft, yPos, chartWidth, 1), Color.Gray * 0.2f);
 
                 DrawYAxisLabel(spriteBatch, font, p.ToString("0.00"), chartLeft, yPos, true);
             }
 
             Vector2 xLabelSize = font.MeasureString(xAxisLabel);
             spriteBatch.DrawString(font, xAxisLabel,
-                new Vector2(chartLeft + (chartWidth - xLabelSize.X) / 2, bounds.Bottom - 20),
+                new Vector2(chartLeft + (chartWidth - xLabelSize.X) / 2, bounds.Bottom - 25),
                 Color.LightGray);
 
             Vector2 yLabelSize = font.MeasureString(yAxisLabel);
             spriteBatch.DrawString(font, yAxisLabel,
-                new Vector2(bounds.X + 5, chartTop + (chartHeight + yLabelSize.X) / 2),
+                new Vector2(bounds.X + 15, chartTop + (chartHeight + yLabelSize.X) / 2),
                 Color.LightGray,
                 -MathHelper.PiOver2,
                 Vector2.Zero,
@@ -178,6 +187,13 @@ namespace Visualization
 
             int points = seriesList[0].Length;
             float xStep = (float)chartWidth / (points - 1);
+
+            Vector2 zeroSize = font.MeasureString("0");
+            spriteBatch.DrawString(font, "0", new Vector2(chartLeft - zeroSize.X / 2, chartBottom + 5), Color.Gray);
+
+            string maxStr = (points - 1).ToString();
+            Vector2 maxSize = font.MeasureString(maxStr);
+            spriteBatch.DrawString(font, maxStr, new Vector2(chartLeft + chartWidth - maxSize.X / 2, chartBottom + 5), Color.Gray);
 
             for (int s = 0; s < seriesList.Count; s++)
             {
@@ -196,7 +212,7 @@ namespace Visualization
         private static void DrawYAxisLabel(SpriteBatch spriteBatch, SpriteFont font, string text, int axisX, int yPos, bool drawGridLine)
         {
             Vector2 size = font.MeasureString(text);
-            spriteBatch.DrawString(font, text, new Vector2(axisX - size.X - 5, yPos - size.Y / 2), Color.Gray);
+            spriteBatch.DrawString(font, text, new Vector2(axisX - size.X - 10, yPos - size.Y / 2), Color.Gray);
         }
 
         private static void DrawLine(SpriteBatch spriteBatch, Vector2 start, Vector2 end, Color color, int thickness)

@@ -13,11 +13,11 @@ namespace Core.Simulation
         public int InitialHP { get; set; } = 100;
         public int MaxHP { get; set; } = 100;
 
-        public int InitialResources { get; set; } = 10; 
+        public int InitialResources { get; set; } = 10;
         public int MaxResource { get; set; } = 100;
 
         public int HealingCost { get; set; } = 10;
-        public int HealingAmount { get; set; } = 35; 
+        public int HealingAmount { get; set; } = 35;
 
         public double DamageMultiplier { get; set; } = 6.5;
 

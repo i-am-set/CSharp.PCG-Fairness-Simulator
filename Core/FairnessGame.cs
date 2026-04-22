@@ -11,10 +11,10 @@ public class FairnessGame : Game
     private SpriteBatch _spriteBatch;
     private bool _isHeadless;
 
-    // Simulation System
     private SimulationController _simController;
     private Dashboard _dashboard;
     private SpriteFont _mainFont;
+    private KeyboardState _previousKeyboardState;
 
     public FairnessGame(bool headless = false)
     {
@@ -40,6 +40,7 @@ public class FairnessGame : Game
     {
         _simController = new SimulationController();
         _dashboard = new Dashboard(_simController);
+        _previousKeyboardState = Keyboard.GetState();
 
         base.Initialize();
     }
@@ -70,21 +71,52 @@ public class FairnessGame : Game
 
     protected override void Update(GameTime gameTime)
     {
+        var kState = Keyboard.GetState();
+
         if (!_isHeadless)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            var kState = Keyboard.GetState();
-
-            if (kState.IsKeyDown(Keys.Space) && !_simController.IsRunning)
+            if (_dashboard.IsSeedMenuOpen)
             {
-                _simController.StartSimulation();
+                _dashboard.UpdateSeedInput(kState, _previousKeyboardState);
             }
-
-            if (kState.IsKeyDown(Keys.C) && _simController.IsRunning)
+            else
             {
-                _simController.Cancel();
+                if (kState.IsKeyDown(Keys.Escape) && _previousKeyboardState.IsKeyUp(Keys.Escape))
+                {
+                    if (_simController.RawResults != null && _simController.RawResults.Count > 0)
+                    {
+                        _simController.ClearResults();
+                    }
+                    else
+                    {
+                        Exit();
+                    }
+                }
+
+                if (kState.IsKeyDown(Keys.Space) && _previousKeyboardState.IsKeyUp(Keys.Space) && !_simController.IsRunning)
+                {
+                    _simController.StartSimulation();
+                }
+
+                if (kState.IsKeyDown(Keys.C) && _previousKeyboardState.IsKeyUp(Keys.C) && _simController.IsRunning)
+                {
+                    _simController.Cancel();
+                }
+
+                if (kState.IsKeyDown(Keys.O) && _previousKeyboardState.IsKeyUp(Keys.O))
+                {
+                    _simController.OpenOutputFolder();
+                }
+
+                if (kState.IsKeyDown(Keys.Tab) && _previousKeyboardState.IsKeyUp(Keys.Tab))
+                {
+                    _dashboard.ToggleDataView();
+                }
+
+                if (kState.IsKeyDown(Keys.S) && _previousKeyboardState.IsKeyUp(Keys.S) && !_simController.IsRunning)
+                {
+                    _dashboard.OpenSeedMenu();
+                }
             }
         }
         else
@@ -96,6 +128,7 @@ public class FairnessGame : Game
             }
         }
 
+        _previousKeyboardState = kState;
         base.Update(gameTime);
     }
 
@@ -107,9 +140,9 @@ public class FairnessGame : Game
             return;
         }
 
-        GraphicsDevice.Clear(Color.Black);
+        GraphicsDevice.Clear(new Color(15, 15, 15));
 
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
         _dashboard.Draw(_spriteBatch, GraphicsDevice.Viewport.Bounds);
 
